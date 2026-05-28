@@ -3,9 +3,9 @@ import string
 from typing import Union, Tuple, List, Dict
 
 # Name Assignment (variables and constants)
-MINING_REWARD = None # TODO: Assign the current bitcoin mining reward
-current_block_height = None # TODO: Assign the current block height as an integer
-BTC_TO_SATS = None # TODO: Assign the number of satoshis in one Bitcoin
+MINING_REWARD = 3.125  # Current bitcoin mining reward (as of 2024 halving)
+current_block_height = 840000  # Current block height as an integer
+BTC_TO_SATS = 100000000  # Number of satoshis in one Bitcoin
 
 # Functions
 def calculate_total_reward(blocks_mined) -> int:
@@ -17,8 +17,7 @@ def calculate_total_reward(blocks_mined) -> int:
     Returns:
         Total BTC reward
     """
-    # TODO: Multiply blocks_mined by MINING_REWARD and return result
-
+    return blocks_mined * MINING_REWARD
 
 def is_valid_tx_fee(fee):
     """Return True if the transaction fee is within an acceptable range.
@@ -29,7 +28,7 @@ def is_valid_tx_fee(fee):
     Returns:
         Boolean indicating whether the fee is valid
     """
-    # TODO: Check if fee is between 0.00001 and 0.01 BTC
+    return 0.00001 <= fee <= 0.01
 
 
 def is_large_balance(balance):
@@ -41,7 +40,7 @@ def is_large_balance(balance):
     Returns:
         True if balance > 50.0 BTC, False otherwise
     """
-    # TODO: Compare balance to 50.0 and return result
+    return balance > 50.0
 
 
 def tx_priority(size_bytes, fee_btc):
@@ -54,7 +53,13 @@ def tx_priority(size_bytes, fee_btc):
     Returns:
         'high' - 0.00005, 'medium' - 0.00001, or 'low' based on fee rate
     """
-    # TODO: Calculate fee rate and use if-elif-else to determine priority
+    fee_rate = fee_btc / size_bytes
+    if fee_rate >= 0.00005:
+        return 'high'
+    elif fee_rate >= 0.00001:
+        return 'medium'
+    else:
+        return 'low'
 
 
 def is_mainnet(network):
@@ -67,6 +72,10 @@ def is_mainnet(network):
         True if mainnet, False otherwise
     """
     # TODO: Convert network to lowercase and compare with "mainnet"
+    return network.lower() == "mainnet"
+
+
+
 
 
 def is_in_range(value):
@@ -79,6 +88,10 @@ def is_in_range(value):
         True if in range, else False
     """
     # TODO: Use comparison chaining to check if 100 <= value <= 200
+    return 100 <= value <= 200
+
+
+
 
 
 def is_same_wallet(wallet1, wallet2):
@@ -92,6 +105,7 @@ def is_same_wallet(wallet1, wallet2):
         True if both point to the same object, else False
     """
     # TODO: Use the 'is' keyword to compare object identity
+    return wallet1 is wallet2
 
 
 def normalize_address(address):
@@ -104,6 +118,7 @@ def normalize_address(address):
         Normalized address string
     """
     # TODO: Strip leading/trailing spaces and convert to lowercase
+    return address.strip().lower()
 
 
 def add_utxo(utxos, new_utxo):
@@ -117,6 +132,8 @@ def add_utxo(utxos, new_utxo):
         Updated list of UTXOs
     """
     # TODO: Append new_utxo to the utxos list and return it
+    utxos.append(new_utxo)
+    return utxos
 
 
 def find_high_fee(fee_list):
@@ -129,6 +146,10 @@ def find_high_fee(fee_list):
         Tuple of (index, fee) or None if not found
     """
     # TODO: Use a for loop with enumerate to find fee > 0.005 and return index and value
+    for i, fee in enumerate(fee_list):
+        if fee > 0.005:
+            return (i, fee)
+    return None
 
 
 def get_wallet_details():
@@ -138,7 +159,7 @@ def get_wallet_details():
         Tuple containing (wallet_name, balance)
     """
     # TODO: Return a tuple with wallet name and balance
-
+    return ("satoshi_wallet", 50.0)
 
 def get_tx_status(tx_pool, txid):
     """Get the status of a transaction from the mempool.
@@ -151,6 +172,7 @@ def get_tx_status(tx_pool, txid):
         Status string or 'not found'
     """
     # TODO: Use dict.get() to return tx status or 'not found' if missing
+    return tx_pool.get(txid, 'not found')
 
 
 def unpack_wallet_info(wallet_info):
@@ -163,6 +185,8 @@ def unpack_wallet_info(wallet_info):
         Formatted string of wallet status
     """
     # TODO: Unpack wallet_info tuple into name and balance, then format the return string
+    name, balance = wallet_info
+    return f"Wallet {name} has balance: {balance} BTC"  
 
 
 def calculate_sats(btc: float) -> int:
@@ -175,6 +199,7 @@ def calculate_sats(btc: float) -> int:
         Equivalent amount in satoshis
     """
     # TODO: Multiply btc by BTC_TO_SATS and return the integer value
+    return int(btc * BTC_TO_SATS)
 
 
 def generate_address(prefix: str = "bc1q") -> str:
@@ -188,6 +213,7 @@ def generate_address(prefix: str = "bc1q") -> str:
     """
     # TODO: Generate a suffix of random alphanumeric characters (length = 32 - length of the prefix)
     # TODO: Concatenate the prefix and suffix to form the mock address
+    return prefix + ''.join(random.choices(string.ascii_lowercase + string.digits, k=32 - len(prefix)))
 
 
 def validate_block_height(height: Union[int, float, str]) -> Tuple[bool, str]:
@@ -202,7 +228,24 @@ def validate_block_height(height: Union[int, float, str]) -> Tuple[bool, str]:
     # TODO: Ensure height is an integer
     # TODO: Check that height is not negative
     # TODO: Check that height is within a realistic range (e.g., <= 800,000)
+    if not isinstance(height, (int, float)):
+        return (False, "Block height must be an integer")
 
+    # Reject floats that are not whole numbers
+    if isinstance(height, float) and height != int(height):
+        return (False, "Block height must be an integer")
+
+    height_int = int(height)
+
+    # Check negative values
+    if height_int < 0:
+        return (False, "Block height cannot be negative")
+
+    # Check realistic maximum
+    if height_int > 800000:
+        return (False, "Block height seems unrealistic")
+
+    return (True, "Valid block height")
 
 def halving_schedule(blocks: List[int]) -> Dict[int, int]:
     """Calculate block reward for given block heights based on halving schedule.
@@ -217,6 +260,24 @@ def halving_schedule(blocks: List[int]) -> Dict[int, int]:
     # TODO: Initialize the halving interval approximately every four years in blocks
     # TODO: Iterate through each block height, compute halvings, and calculate reward
     # TODO: Store results in a dictionary
+     # Initialize the base reward for the genesis block in sats
+    base_reward_sats = 50 * 100000000  # 50 BTC in satoshis
+    
+    # Initialize the halving interval approximately every four years in blocks
+    halving_interval = 210000  # Approximately 4 years
+    
+    result = {}
+    
+    # Iterate through each block height, compute halvings, and calculate reward
+    for height in blocks:
+        halvings = height // halving_interval
+        # Maximum of 64 halvings (as per Bitcoin's limit)
+        halvings = min(halvings, 64)
+        reward_sats = base_reward_sats >> halvings  # Bit shift for halving
+        result[height] = reward_sats
+    
+    return result
+
 
 
 def find_utxo_with_min_value(utxos: List[Dict[str, int]], target: int) -> Dict[str, int]:
@@ -231,10 +292,25 @@ def find_utxo_with_min_value(utxos: List[Dict[str, int]], target: int) -> Dict[s
     """
     # TODO: Filter UTXOs to those with value >= target
     # TODO: Return the one with the smallest value, or {} if none found
-
+    # Filter UTXOs to those with value >= target
+    eligible_utxos = [utxo for utxo in utxos if utxo.get('value', 0) >= target]
+    
+    # Return the one with the smallest value, or {} if none found
+    if not eligible_utxos:
+        return {}
+    
+    return min(eligible_utxos, key=lambda x: x.get('value', 0))
 
 def create_utxo(txid: str, vout: int, **kwargs) -> Dict[str, Union[str, int]]:
     """Create a UTXO dictionary with optional additional fields."""
-    # TODO: Create a base dictionary with txid and vout
-    # TODO: Merge any extra keyword arguments into the base
+    # Create a base dictionary with txid and vout
+    base_utxo = {
+        'txid': txid,
+        'vout': vout
+    }
+    
+    # Merge any extra keyword arguments into the base
+    base_utxo.update(kwargs)
+    return base_utxo
+
 
